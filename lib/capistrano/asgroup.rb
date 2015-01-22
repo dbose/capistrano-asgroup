@@ -25,7 +25,7 @@ module Capistrano
         autoScaleDesc = @as_api.DescribeAutoScalingGroups('AutoScalingGroupNames.member' => [which])
         autoScalingMembers = autoScaleDesc["DescribeAutoScalingGroupsResponse"]["DescribeAutoScalingGroupsResult"]["AutoScalingGroups"]["member"]["Instances"]["member"]
 
-        if autoScalingMembers.blank?                        
+        if autoScalingMembers.empty?                        
             return
         end                        
 
