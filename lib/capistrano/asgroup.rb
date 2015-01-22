@@ -11,32 +11,49 @@ module Capistrano
       def asgroupname(which, *args)
 
         # Get Auto Scaling API obj
-        @as_api ||= RightAws::AsInterface.new(fetch(:aws_access_key_id), fetch(:aws_secret_access_key), {})
+        @as_api ||= RightScale::CloudApi::AWS::AS::Manager::new(fetch(:aws_access_key_id), 
+                                                                fetch(:aws_secret_access_key), 
+                                                                'https://autoscaling.ap-southeast-2.amazonaws.com')
+        
         # Get EC2 API obj
-        @ec2_api ||= RightAws::Ec2.new(fetch(:aws_access_key_id), fetch(:aws_secret_access_key), {})
+        @ec2_api ||= RightScale::CloudApi::AWS::EC2::Manager::new(fetch(:aws_access_key_id), 
+                                                                  fetch(:aws_secret_access_key), 
+                                                                  'https://ec2.ap-southeast-2.amazonaws.com')
+
 
         # Get descriptions of all the Auto Scaling groups
-        @autoScaleDesc = @as_api.describe_auto_scaling_groups
-        # Get descriptions of all the EC2 instances
-        @ec2DescInst = @ec2_api.describe_instances
+        autoScaleDesc = @as_api.DescribeAutoScalingGroups('AutoScalingGroupNames.member' => [which])
+        autoScalingMembers = autoScaleDesc.try(:[], "DescribeAutoScalingGroupsResponse")
+                        .try(:[], "DescribeAutoScalingGroupsResult")
+                        .try(:[], "AutoScalingGroups").try(:[], "member")
+                        .try(:[], "Instances")
+                        .try(:[], "member")
 
-        # Find the right Auto Scaling group
-        @autoScaleDesc.each do |asGroup|
-            # Look for an exact name match or Cloud Formation style match (<cloud_formation_script>-<as_name>-<generated_id>)
-            if asGroup[:auto_scaling_group_name] == which or asGroup[:auto_scaling_group_name].scan("-#{which}-").length > 0
-                # For each instance in the Auto Scale group
-                asGroup[:instances].each do |asInstance|
-                    # Get description of all instances so that we can find the DNS names based on instance ID
-                    @ec2DescInst.delete_if{|i| i[:aws_state] != "running"}.each do |instance|
-                        # Match the instance IDs
-                        if instance[:aws_instance_id] == asInstance[:instance_id]
-                            puts "AS Instance ID: #{asInstance[:instance_id]} DNS: #{instance[:dns_name]}"
-                            server(instance[:dns_name], *args)
-                        end
-                    end
-                end
-            end
+        if autoScalingMembers.blank?                        
+            return
+        end                        
+
+        # Iron out the single or multiple instances
+        autoScalingMembers = autoScalingMembers.is_a?(Hash) ? [autoScalingMembers] : autoScalingMembers   
+
+        # Get the instance ids
+        autoScaleInstances = autoScalingMembers.map{|he| he["InstanceId"]}
+        puts "Instance Ids: #{autoScaleInstances}"
+
+        # Get the instance meta data
+        instanceMetaData = @ec2_api.DescribeInstances('InstanceId' => autoScaleInstances)        
+        instanceItems = instanceMetaData["DescribeInstancesResponse"]["reservationSet"]["item"]
+        instanceItems = instanceItems.is_a?(Hash) ? [instanceItems] : instanceItems
+        instanceDNSNames = instanceItems.map do |instanceItem|  
+            tags = instanceItem["tagSet"]["item"]
+            hostnameHash = tags.select {|el| el["value"] if el["key"] ==  "Name" }
+            serverName = "#{hostnameHash.first["value"]}.dynamic.f2.com.au"
+            puts "Server name - #{serverName}"
+
+            # Plug to capistrano
+            server(serverName, *args)
         end
+    
       end
     end
 
