@@ -1,4 +1,4 @@
-require 'right_aws'
+require 'right_aws_api'
 
 unless Capistrano::Configuration.respond_to?(:instance)
   abort 'capistrano/asgroup requires Capistrano >= 2'
