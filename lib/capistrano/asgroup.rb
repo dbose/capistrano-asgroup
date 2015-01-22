@@ -23,7 +23,7 @@ module Capistrano
 
         # Get descriptions of all the Auto Scaling groups
         autoScaleDesc = @as_api.DescribeAutoScalingGroups('AutoScalingGroupNames.member' => [which])
-        autoScalingMembers = autoScaleDesc["DescribeAutoScalingGroupsResponse"]["DescribeAutoScalingGroupsResult"]["AutoScalingGroups"]["member")]["Instances"]["member"]
+        autoScalingMembers = autoScaleDesc["DescribeAutoScalingGroupsResponse"]["DescribeAutoScalingGroupsResult"]["AutoScalingGroups"]["member"]["Instances"]["member"]
 
         if autoScalingMembers.blank?                        
             return
