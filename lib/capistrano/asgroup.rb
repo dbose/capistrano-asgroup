@@ -41,7 +41,7 @@ module Capistrano
         instanceItems = instanceMetaData["DescribeInstancesResponse"]["reservationSet"]["item"]
         instanceItems = instanceItems.is_a?(Hash) ? [instanceItems] : instanceItems
         instanceDNSNames = instanceItems.map do |instanceItem|  
-            tags = instanceItem["tagSet"]["item"]
+            tags = instanceItem["instancesSet"]["item"]["tagSet"]["item"]
             hostnameHash = tags.select {|el| el["value"] if el["key"] ==  "Name" }
             serverName = "#{hostnameHash.first["value"]}.dynamic.f2.com.au"
             puts "Server name - #{serverName}"
