@@ -1,4 +1,5 @@
 require 'right_aws_api'
+require 'pry'
 
 unless Capistrano::Configuration.respond_to?(:instance)
   abort 'capistrano/asgroup requires Capistrano >= 2'
@@ -41,13 +42,20 @@ module Capistrano
         instanceItems = instanceMetaData["DescribeInstancesResponse"]["reservationSet"]["item"]
         instanceItems = instanceItems.is_a?(Hash) ? [instanceItems] : instanceItems
         instanceDNSNames = instanceItems.map do |instanceItem|  
-            tags = instanceItem["instancesSet"]["item"]["tagSet"]["item"]
-            hostnameHash = tags.select {|el| el["value"] if el["key"] ==  "Name" }
-            serverName = "#{hostnameHash.first["value"]}.dynamic.f2.com.au"
-            puts "Server name - #{serverName}"
 
-            # Plug to capistrano
-            server(serverName, *args)
+            instancesInInstanceSet = instanceItem["instancesSet"]["item"]    
+            instancesInInstanceSet = instancesInInstanceSet.is_a?(Hash) ? [instancesInInstanceSet] : instancesInInstanceSet
+
+            instancesInInstanceSet.each do |instance|
+                tags = instance["tagSet"]["item"]
+                hostnameHash = tags.select {|el| el["value"] if el["key"] ==  "Name" }
+                serverName = "#{hostnameHash.first["value"]}.dynamic.f2.com.au"
+                puts "Server name - #{serverName}"
+
+                # Plug to capistrano
+                server(serverName, *args)
+            end            
+                        
         end
     
       end
