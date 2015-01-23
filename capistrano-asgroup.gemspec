@@ -4,9 +4,9 @@ $:.push File.expand_path('../lib', __FILE__)
 Gem::Specification.new do |s|
   s.name        = 'capistrano-asgroup'
   s.version     = '0.0.1'
-  s.authors     = ['Thomas Verbiscer']
+  s.authors     = ['Thomas Verbiscer', 'Debasish Bose']
   s.date        = '2013-01-17'
-  s.email       = ['asgroup@verbiscer.com']
+  s.email       = ['asgroup@verbiscer.com', 'bose.debasish@gmail.com']
   s.homepage    = 'https://github.com/tverbiscer/capistrano-asgroup'
   s.summary     = 'A Capistrano plugin aimed at easing the pain of deploying to AWS Auto Scale instances.'
   s.description = 'capistrano-asgroup is a Capistrano plugin designed to simplify the task of deploying to infrastructure hosted on Amazon AWS, in particular, within Auto Scaling Groups. It was completely inspired by the capistrano-ec2group and capistrano-ec2tag plugins, to which all credit is due.'
