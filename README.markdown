@@ -1,3 +1,12 @@
+## Update
+Out-of-the box this gem didn't work and I had to fork using Rightscale api to make it work. Just plug-in appropriate auto-scaling group name (from CloudFormation in AWS console) in config/deploy/{staging,production}.rb to configure capistrano server and continue from there.
+
+```ruby
+asgroupname 'omg-polaris-staging-ScalingGroup-RA5AIHA1JTCR', :app
+asgroupname 'omg-polaris-staging-ScalingGroup-RA5AIHA1JTCR', :web
+asgroupname 'omg-polaris-staging-ScalingGroup-RA5AIHA1JTCR', :db, :primary => true
+```
+
 ## Introduction
 
 capistrano-asgroup is a [Capistrano](https://github.com/capistrano/capistrano) plugin designed to simplify the
